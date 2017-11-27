@@ -1,0 +1,48 @@
+{
+  "name": "line-bot-server-nodejs",
+  "version": "1.0.0",
+  "description": "LINE Bot Server for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "npm run build",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "lint": "tslint .",
+    "clean": "del-cli dist",
+    "prebuild": "npm run lint",
+    "build": "tsc",
+    "precommit": "npm run lint",
+    "prepush": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/micksatana/line-bot-server-nodejs.git"
+  },
+  "keywords": [
+    "LINE",
+    "Bot",
+    "Server",
+    "Express"
+  ],
+  "author": "Satana Charuwichitratana",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/micksatana/line-bot-server-nodejs/issues"
+  },
+  "homepage": "https://github.com/micksatana/line-bot-server-nodejs#readme",
+  "dependencies": {
+    "@line/bot-sdk": "^5.0.1",
+    "@types/express": "^4.0.39",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.5",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "del-cli": "^1.1.0",
+    "mocha": "^4.0.1",
+    "prettier": "^1.8.2",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.3"
+  }
+}
