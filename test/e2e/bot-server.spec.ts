@@ -11,9 +11,11 @@ describe('BotServer', () => {
 
   before(() => {
     server = new BotServer({
-      channelSecret: 'testSecret',
-      channelAccessToken: 'testToken',
-      port: 1234
+      channelAccessToken: 'test',
+      channelSecret: 'test',
+      port: 1234,
+      key: 'keyFile',
+      cert: 'certFile'
     });
   });
 

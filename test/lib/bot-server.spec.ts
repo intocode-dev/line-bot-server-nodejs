@@ -13,7 +13,9 @@ describe('BotServer', () => {
         expect(() => {
           new BotServer({
             channelSecret: 'testSecret',
-            channelAccessToken: 'testToken'
+            channelAccessToken: 'testToken',
+            key: 'keyFile',
+            cert: 'certFile'
           } as BotServerOptions);
         }).to.throw('Missing options.port\nPlease set PORT environment variable.');
       });
@@ -24,7 +26,9 @@ describe('BotServer', () => {
         expect(() => {
           new BotServer({
             channelAccessToken: 'test',
-            port: 1234
+            port: 1234,
+            key: 'keyFile',
+            cert: 'certFile'
           } as BotServerOptions);
         }).to.throw('Missing options.channelSecret\nPlease set CHANNEL_SECRET environment variable.');
       });
@@ -35,9 +39,37 @@ describe('BotServer', () => {
         expect(() => {
           new BotServer({
             channelSecret: 'test',
-            port: 1234
+            port: 1234,
+            key: 'keyFile',
+            cert: 'certFile'
           } as BotServerOptions);
         }).to.throw('Missing options.channelAccessToken\nPlease set CHANNEL_ACCESS_TOKEN environment variable.');
+      });
+    });
+
+    describe('when key is not provided in options', () => {
+      it('should throw an error', () => {
+        expect(() => {
+          new BotServer({
+            channelAccessToken: 'test',
+            channelSecret: 'test',
+            port: 1234,
+            cert: 'certFile'
+          } as BotServerOptions);
+        }).to.throw('Missing options.key\nPlease set SSL_KEY environment variable.');
+      });
+    });
+
+    describe('when cert is not provided in options', () => {
+      it('should throw an error', () => {
+        expect(() => {
+          new BotServer({
+            channelAccessToken: 'test',
+            channelSecret: 'test',
+            port: 1234,
+            key: 'keyFile'
+          } as BotServerOptions);
+        }).to.throw('Missing options.cert\nPlease set SSL_CERT environment variable.');
       });
     });
 

@@ -1,5 +1,6 @@
 import * as LINEBot from '@line/bot-sdk';
 import * as express from 'express';
+import * as https from 'https';
 import {BotServerOptions} from './bot-server-options';
 import {Express, Router} from 'express';
 
@@ -24,6 +25,14 @@ export default class BotServer {
       throw new Error('Missing options.channelAccessToken\nPlease set CHANNEL_ACCESS_TOKEN environment variable.');
     }
 
+    if (!this.options.key) {
+      throw new Error('Missing options.key\nPlease set SSL_KEY environment variable.');
+    }
+
+    if (!this.options.cert) {
+      throw new Error('Missing options.cert\nPlease set SSL_CERT environment variable.');
+    }
+
     this.clientConfig = {
       channelSecret: this.options.channelSecret,
       channelAccessToken: this.options.channelAccessToken
@@ -44,7 +53,10 @@ export default class BotServer {
   }
 
   public start(callback?: Function) {
-    this.app.listen(this.options.port, callback);
+    https.createServer({
+      key: this.options.key,
+      cert: this.options.cert
+    }, this.app).listen(this.options.port, callback);
   }
 
 }
