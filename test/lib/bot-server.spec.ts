@@ -15,7 +15,7 @@ describe('BotServer', () => {
             channelSecret: 'testSecret',
             channelAccessToken: 'testToken'
           } as BotServerOptions);
-        }).to.throw('Missing port option. Please set PORT environment variable.');
+        }).to.throw('Missing options.port\nPlease set PORT environment variable.');
       });
     });
 
@@ -26,7 +26,7 @@ describe('BotServer', () => {
             channelAccessToken: 'test',
             port: 1234
           } as BotServerOptions);
-        }).to.throw('Missing channelSecret option. Please set CHANNEL_SECRET environment variable.');
+        }).to.throw('Missing options.channelSecret\nPlease set CHANNEL_SECRET environment variable.');
       });
     });
 
@@ -37,7 +37,7 @@ describe('BotServer', () => {
             channelSecret: 'test',
             port: 1234
           } as BotServerOptions);
-        }).to.throw('Missing channelAccessToken option. Please set CHANNEL_ACCESS_TOKEN environment variable.');
+        }).to.throw('Missing options.channelAccessToken\nPlease set CHANNEL_ACCESS_TOKEN environment variable.');
       });
     });
 
@@ -52,5 +52,7 @@ describe('BotServer', () => {
         }).not.to.throw;
       });
     });
+
   });
+
 });

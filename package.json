@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "npm run build",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts --exit",
     "lint": "tslint .",
     "clean": "del-cli dist",
     "prebuild": "npm run lint",
@@ -37,8 +37,10 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.5",
+    "@types/chai-http": "^3.0.3",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "del-cli": "^1.1.0",
     "mocha": "^4.0.1",
     "prettier": "^1.8.2",

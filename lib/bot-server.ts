@@ -7,21 +7,21 @@ export default class BotServer {
   options: BotServerOptions;
   client: LINEBot.Client;
   clientConfig: LINEBot.ClientConfig;
-  server: Express;
+  app: Express;
 
   constructor(options: BotServerOptions) {
     this.options = options;
 
     if (!this.options.port) {
-      throw new Error('Missing port option. Please set PORT environment variable.');
+      throw new Error('Missing options.port\nPlease set PORT environment variable.');
     }
 
     if (!this.options.channelSecret) {
-      throw new Error('Missing channelSecret option. Please set CHANNEL_SECRET environment variable.');
+      throw new Error('Missing options.channelSecret\nPlease set CHANNEL_SECRET environment variable.');
     }
 
     if (!this.options.channelAccessToken) {
-      throw new Error('Missing channelAccessToken option. Please set CHANNEL_ACCESS_TOKEN environment variable.');
+      throw new Error('Missing options.channelAccessToken\nPlease set CHANNEL_ACCESS_TOKEN environment variable.');
     }
 
     this.clientConfig = {
@@ -31,15 +31,20 @@ export default class BotServer {
 
     this.client = new LINEBot.Client(this.clientConfig);
 
-    this.server = express();
+    this.app = express();
+
+    this.app.get('/status', (req, res) => {
+      res.status(200);
+      res.end();
+    });
   }
 
   public setWebhook(endpoint: string, callback: Router) {
-    this.server.post(endpoint, LINEBot.middleware(this.clientConfig as LINEBot.MiddlewareConfig), callback);
+    this.app.post(endpoint, LINEBot.middleware(this.clientConfig as LINEBot.MiddlewareConfig), callback);
   }
 
   public start(callback?: Function) {
-    this.server.listen(this.options.port, callback);
+    this.app.listen(this.options.port, callback);
   }
 
 }
