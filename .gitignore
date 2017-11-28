@@ -65,6 +65,9 @@ typings/
 **/*.js.map
 **/*.d.ts
 
+# SSL
+ssl/*
+
 # Exceptions
 !test/tsconfig.mocha.js
 
