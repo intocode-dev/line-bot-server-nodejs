@@ -5,7 +5,7 @@ import * as LINEBot from '@line/bot-sdk';
 import * as express from 'express';
 import * as https from 'https';
 import {BotServerOptions} from './bot-server-options';
-import {Express, Router} from 'express';
+import {ErrorRequestHandler, Express, RequestHandler, Router} from 'express';
 
 export default class BotServer {
   static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
@@ -64,12 +64,12 @@ export default class BotServer {
     });
   }
 
-  public setWebhook(endpoint: string, callback: Router) {
+  public setWebhook(endpoint: string, callback: RequestHandler | ErrorRequestHandler) {
     this.app.post(endpoint, LINEBot.middleware(this.clientConfig as LINEBot.MiddlewareConfig), callback);
   }
 
-  public start(callback?: Function) {
-    this.https.listen(this.options.port, callback);
+  public start() {
+    this.https.listen(this.options.port);
   }
 
   static generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
