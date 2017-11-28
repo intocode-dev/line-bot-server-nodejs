@@ -5,7 +5,7 @@ import * as LINEBot from '@line/bot-sdk';
 import * as express from 'express';
 import * as https from 'https';
 import {BotServerOptions} from './bot-server-options';
-import {ErrorRequestHandler, Express, RequestHandler, Router} from 'express';
+import {ErrorRequestHandler, Express, RequestHandler} from 'express';
 
 export default class BotServer {
   static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
