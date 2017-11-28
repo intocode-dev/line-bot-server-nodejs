@@ -4,12 +4,10 @@ import BotServer from '../../lib/bot-server';
 
 chai.use(ChaiHttp);
 
-const expect = chai.expect;
-
-describe('BotServer', () => {
+describe('/status', () => {
   let server: BotServer;
 
-  before(() => {
+  beforeEach(() => {
     server = new BotServer({
       channelAccessToken: 'test',
       channelSecret: 'test',
@@ -19,13 +17,24 @@ describe('BotServer', () => {
     });
   });
 
-  it('should be startable', () => {
-    expect(() => server.start()).not.to.throw;
+  describe('when enableStatusEndpoint is not called', () => {
+
+    it('should return 404', (done) => {
+      chai.request(server.app)
+        .get('/status')
+        .end((err, res: ChaiHttp.Response) => {
+          chai.expect(err.message).to.equal('Not Found');
+          chai.expect(res).to.have.status(404);
+          done();
+        });
+    });
+
   });
 
-  describe('/status', () => {
+  describe('when enableStatusEndpoint is called', () => {
 
     it('should return 200', (done) => {
+      server.enableStatusEndpoint();
       chai.request(server.app)
         .get('/status')
         .end((err, res: ChaiHttp.Response) => {

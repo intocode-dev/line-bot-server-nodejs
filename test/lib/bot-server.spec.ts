@@ -87,4 +87,23 @@ describe('BotServer', () => {
 
   });
 
+  describe('start', () => {
+    let server: BotServer;
+
+    before(() => {
+      server = new BotServer({
+        channelAccessToken: 'test',
+        channelSecret: 'test',
+        port: 1234,
+        key: 'keyFile',
+        cert: 'certFile'
+      });
+    });
+
+    it('should be startable', () => {
+      expect(() => server.start()).not.to.throw;
+    });
+
+  });
+
 });

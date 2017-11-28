@@ -42,6 +42,9 @@ export default class BotServer {
 
     this.app = express();
 
+  }
+
+  public enableStatusEndpoint() {
     this.app.get('/status', (req, res) => {
       res.status(200);
       res.end();
