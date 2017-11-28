@@ -12,8 +12,8 @@ describe('/status', () => {
       channelAccessToken: 'test',
       channelSecret: 'test',
       port: 1234,
-      key: 'keyFile',
-      cert: 'certFile'
+      key: BotServer.defaultSSLKey,
+      cert: BotServer.defaultSSLCert
     });
   });
 
