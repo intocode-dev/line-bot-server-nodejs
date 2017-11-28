@@ -233,12 +233,6 @@ describe('BotServer', () => {
 
   describe('generateEnvFile', () => {
 
-    describe('when file name does not start with dot', () => {
-      it('should throw an error', () => {
-        expect(() => BotServer.generateEnvFile('test.env', {} as BotServerOptions)).to.throw('File name must starts with dot "."');
-      });
-    });
-
     describe('when file name starts with dot', () => {
 
       describe('and options is empty', () => {

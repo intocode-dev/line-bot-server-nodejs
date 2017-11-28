@@ -103,10 +103,6 @@ export default class BotServer {
   }
 
   static generateEnvFile(fileName: string, options: BotServerOptions = {} as BotServerOptions) {
-    if (/^\./.test(fileName) === false) {
-      throw new Error('File name must starts with dot "."');
-    }
-
     let buffer = new Buffer(
       'CHANNEL_ACCESS_TOKEN=' + (options.channelAccessToken || '') + '\n' +
       'CHANNEL_SECRET=' + (options.channelSecret || '') + '\n' +
