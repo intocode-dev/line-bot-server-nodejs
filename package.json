@@ -1,6 +1,6 @@
 {
   "name": "line-bot-server-nodejs",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "LINE Bot Server for Node.js",
   "main": "index.js",
   "scripts": {
