@@ -4,7 +4,7 @@
   "description": "LINE Bot Server for Node.js",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npm run build && npm run gen-default-ssl",
+    "postinstall": "npm run build && npm run gen-default-ssl && npm run gen-empty-env",
     "gen-default-ssl": "ts-node scripts/gen-default-ssl.ts",
     "gen-empty-env": "ts-node scripts/gen-empty-env.ts",
     "pretest": "npm run build",
@@ -16,7 +16,7 @@
     "precommit": "npm run lint",
     "prepush": "npm run test",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- -r ts-node/register test/**/*.spec.ts --exit",
-    "codecov": "codecov -t "
+    "codecov": "codecov -t 4a63f508-52ac-4484-8246-d0973f65dcdf"
   },
   "repository": {
     "type": "git",
