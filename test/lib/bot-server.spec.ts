@@ -2,20 +2,28 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as _ from 'lodash';
 import * as chai from 'chai';
+import * as ChaiAsPromised from 'chai-as-promised';
 import * as dotenv from 'dotenv';
+import * as sinon from 'sinon';
+import * as pem from 'pem';
+import * as LINEBot from '@line/bot-sdk';
 import BotServer from '../../lib/bot-server';
 import {BotServerOptions} from '../../lib/bot-server-options';
+import {SinonStub} from 'sinon';
+
+chai.use(ChaiAsPromised);
 
 const expect = chai.expect;
 
 describe('BotServer', () => {
   let fullOptions: BotServerOptions = {
-    channelSecret: 'testSecret',
-    channelAccessToken: 'testToken',
-    port: 1234,
-    key: BotServer.defaultSSLKey,
-    cert: BotServer.defaultSSLCert
-  };
+      channelSecret: 'testSecret',
+      channelAccessToken: 'testToken',
+      port: 1234,
+      key: BotServer.defaultSSLKey,
+      cert: BotServer.defaultSSLCert
+    },
+    sandbox = sinon.createSandbox();
 
   describe('constructor', () => {
 
@@ -141,7 +149,7 @@ describe('BotServer', () => {
 
     });
 
-    describe('when all required options are provided correctly', function () {
+    describe('when all required options are provided correctly', () => {
       let server: BotServer;
 
       before(() => {
@@ -171,14 +179,54 @@ describe('BotServer', () => {
   });
 
   describe('start', () => {
-    let server: BotServer;
+    let server: BotServer,
+      stubListen: SinonStub;
 
-    before(function () {
+    before(() => {
       server = new BotServer(fullOptions);
+      stubListen = sandbox.stub(server.https, 'listen');
+      server.start();
     });
 
-    it('should be able to start', () => {
-      expect(() => server.start()).not.to.throw;
+    it('should be able to start with correct port', () => {
+      expect(stubListen.getCall(0).args[0]).to.equal(fullOptions.port);
+    });
+
+    after(() => {
+      stubListen.restore();
+    });
+
+  });
+
+  describe('setWebHook', () => {
+    let server: BotServer,
+      stubPost: SinonStub,
+      stubMiddleware: SinonStub,
+      callback = () => {},
+      endpoint = '/testing';
+
+    before(() => {
+      server = new BotServer(fullOptions);
+      stubPost = sandbox.stub(server.app, 'post');
+      stubMiddleware = sandbox.stub(LINEBot, 'middleware');
+      server.setWebhook(endpoint, callback);
+    });
+
+    it('should set endpoint', () => {
+      expect(stubPost.getCall(0).args[0]).to.equal(endpoint);
+    });
+
+    it('should set middleware', () => {
+      expect(stubMiddleware.getCall(0).args[0]).to.equal(server.clientConfig);
+    });
+
+    it('should set callback', () => {
+      expect(stubPost.getCall(0).args[2]).to.equal(callback);
+    });
+
+    after(() => {
+      stubMiddleware.restore();
+      stubPost.restore();
     });
 
   });
@@ -199,6 +247,29 @@ describe('BotServer', () => {
 
         before(() => {
           BotServer.generateEnvFile(testEnvFile, {} as BotServerOptions);
+          expectedConfigObject = dotenv.parse(fs.readFileSync(testEnvFile));
+        });
+
+        it('should create a file with empty variables', () => {
+          expect(expectedConfigObject.CHANNEL_SECRET).to.equal('');
+          expect(expectedConfigObject.CHANNEL_ACCESS_TOKEN).to.equal('');
+          expect(expectedConfigObject.PORT).to.equal('');
+          expect(expectedConfigObject.SSL_KEY).to.equal('');
+          expect(expectedConfigObject.SSL_CERT).to.equal('');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+
+      });
+
+      describe('and options is not provided', () => {
+        let testEnvFile = '.test-gen-empty.env',
+          expectedConfigObject: { [name: string]: string };
+
+        before(() => {
+          BotServer.generateEnvFile(testEnvFile);
           expectedConfigObject = dotenv.parse(fs.readFileSync(testEnvFile));
         });
 
@@ -243,6 +314,136 @@ describe('BotServer', () => {
 
   });
 
+  describe('generateDefaultSSLAsync', () => {
+
+    describe('when key file not exists', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub;
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubFileExists.onFirstCall().returns(false);
+        stubFileExists.onSecondCall().returns(true);
+        BotServer.generateDefaultSSLAsync();
+      });
+
+      it('should create certificate and key files', () => {
+        expect(stubCreateCert.calledOnce).to.be.true;
+
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+      });
+
+    });
+
+    describe('when cert file not exists', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub;
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubFileExists.onFirstCall().returns(true);
+        stubFileExists.onSecondCall().returns(false);
+        BotServer.generateDefaultSSLAsync();
+      });
+
+      it('should create certificate and key files', () => {
+        expect(stubCreateCert.calledOnce).to.be.true;
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+      });
+
+    });
+
+    describe('when key and cert files exists', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub;
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubFileExists.onFirstCall().returns(true);
+        stubFileExists.onSecondCall().returns(true);
+        BotServer.generateDefaultSSLAsync();
+      });
+
+      it('should not create certificate and key files', () => {
+        expect(stubCreateCert.called).to.be.false;
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+      });
+
+    });
+
+    describe('when pem module cannot create certificate', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub,
+        errorMessage = 'Test createCertificate error';
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubFileExists.onFirstCall().returns(false);
+        stubCreateCert.callsArgWith(1, new Error(errorMessage), { serviceKey: 'serviceKey', certificate: 'certificate' });
+      });
+
+      it('should reject with an error', () => {
+        return expect(BotServer.generateDefaultSSLAsync()).to.eventually.rejectedWith(errorMessage);
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+      });
+
+    });
+
+    describe('when pem module can create certificate', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub,
+        stubWriteFile: SinonStub,
+        serviceKey = 'serviceKey',
+        certificate = 'certificate';
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubWriteFile = sandbox.stub(fs, 'writeFileSync');
+        stubFileExists.onFirstCall().returns(false);
+        stubCreateCert.callsArgWith(1, null, { serviceKey: serviceKey, certificate: certificate });
+      });
+
+      it('should create cert and key files', () => {
+        return expect(BotServer.generateDefaultSSLAsync()).to.eventually.be.true
+          .then(() => {
+            expect(stubWriteFile.getCall(0).args[0]).to.equal(BotServer.defaultSSLKey);
+            expect(stubWriteFile.getCall(0).args[1]).to.equal(serviceKey);
+            expect(stubWriteFile.getCall(1).args[0]).to.equal(BotServer.defaultSSLCert);
+            expect(stubWriteFile.getCall(1).args[1]).to.equal(certificate);
+          });
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+        stubWriteFile.restore();
+      });
+
+    });
+
+  });
+
   describe('getEnvOptions', () => {
     let testEnvFile = path.resolve(__dirname, '../../.test.env'),
       testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
@@ -254,7 +455,7 @@ describe('BotServer', () => {
 
     before(() => {
       fs.writeFileSync(testEnvFile, testOptionsString);
-      dotenv.config({ path: testEnvFile });
+      dotenv.config({path: testEnvFile});
       expectedOptions = BotServer.getEnvOptions();
     });
 
@@ -282,6 +483,10 @@ describe('BotServer', () => {
       fs.removeSync(testEnvFile);
     });
 
+  });
+
+  after(() => {
+    sandbox.restore();
   });
 
 });

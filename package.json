@@ -14,7 +14,9 @@
     "prebuild": "npm run lint",
     "build": "tsc",
     "precommit": "npm run lint",
-    "prepush": "npm run test"
+    "prepush": "npm run test",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- -r ts-node/register test/**/*.spec.ts --exit",
+    "codecov": "codecov -t "
   },
   "repository": {
     "type": "git",
@@ -48,12 +50,16 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.5",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/chai-http": "^3.0.3",
     "@types/mocha": "^2.2.44",
     "@types/sinon": "^4.0.0",
     "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "chai-http": "^3.0.0",
+    "codecov": "^3.0.0",
     "del-cli": "^1.1.0",
+    "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
     "prettier": "^1.8.2",
     "sinon": "^4.1.2",
