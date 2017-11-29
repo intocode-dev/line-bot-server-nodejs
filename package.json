@@ -13,8 +13,8 @@
     "clean": "del-cli dist",
     "prebuild": "npm run lint",
     "build": "tsc",
-    "precommit": "npm run lint",
-    "prepush": "npm run test",
+    "precommit": "npm run build && npm run coverage",
+    "prepush": "npm run build && npm run coverage",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- -r ts-node/register test/**/*.spec.ts --exit",
     "codecov": "codecov -t 4a63f508-52ac-4484-8246-d0973f65dcdf"
   },
@@ -59,6 +59,7 @@
     "chai-http": "^3.0.0",
     "codecov": "^3.0.0",
     "del-cli": "^1.1.0",
+    "husky": "^0.14.3",
     "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
     "prettier": "^1.8.2",
