@@ -1,6 +1,6 @@
 {
   "name": "line-bot-server",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "LINE Bot Server for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,7 +19,8 @@
     "prepush": "npm run build && npm run coverage",
     "pretest": "npm run build && npm run gen-default-ssl && npm run gen-empty-env",
     "release": "npm run build && npm publish --access public",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts --exit"
+    "test": "mocha -r ts-node/register test/**/*.spec.ts --exit",
+    "travis:test": "npm run build && npm run gen-default-ssl && npm run gen-empty-env && npm run coverage && npm run coverage:remap"
   },
   "repository": {
     "type": "git",
