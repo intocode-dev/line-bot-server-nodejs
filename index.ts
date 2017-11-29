@@ -1,3 +1,2 @@
-import BotServer from './lib/bot-server';
-
-export = BotServer;
+export {BotServer} from './lib/bot-server';
+export {BotServerOptions} from './lib/bot-server-options';

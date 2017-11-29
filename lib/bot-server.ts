@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as pem from 'pem';
 import {BotServerOptions} from './bot-server-options';
 
-export default class BotServer {
+export class BotServer {
   public static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
   public static defaultSSLCert = path.resolve(__dirname, '../ssl/localhost.crt');
 

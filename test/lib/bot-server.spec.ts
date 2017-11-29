@@ -1,15 +1,15 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as _ from 'lodash';
+import * as LINEBot from '@line/bot-sdk';
 import * as chai from 'chai';
 import * as ChaiAsPromised from 'chai-as-promised';
 import * as dotenv from 'dotenv';
-import * as sinon from 'sinon';
+import * as fs from 'fs-extra';
+import * as _ from 'lodash';
+import * as path from 'path';
 import * as pem from 'pem';
-import * as LINEBot from '@line/bot-sdk';
-import BotServer from '../../lib/bot-server';
-import {BotServerOptions} from '../../lib/bot-server-options';
+import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
+import {BotServer} from '../../lib/bot-server';
+import {BotServerOptions} from '../../lib/bot-server-options';
 
 chai.use(ChaiAsPromised);
 
@@ -17,11 +17,11 @@ const expect = chai.expect;
 
 describe('BotServer', () => {
   let fullOptions: BotServerOptions = {
-      channelSecret: 'testSecret',
+      cert: BotServer.defaultSSLCert,
       channelAccessToken: 'testToken',
-      port: 1234,
+      channelSecret: 'testSecret',
       key: BotServer.defaultSSLKey,
-      cert: BotServer.defaultSSLCert
+      port: 1234
     },
     sandbox = sinon.createSandbox();
 
@@ -415,7 +415,7 @@ describe('BotServer', () => {
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubWriteFile = sandbox.stub(fs, 'writeFileSync');
         stubFileExists.onFirstCall().returns(false);
-        stubCreateCert.callsArgWith(1, null, { serviceKey: serviceKey, certificate: certificate });
+        stubCreateCert.callsArgWith(1, null, { serviceKey, certificate });
       });
 
       it('should create cert and key files', () => {

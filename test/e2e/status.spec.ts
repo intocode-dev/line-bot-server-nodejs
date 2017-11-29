@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import ChaiHttp = require('chai-http');
-import BotServer from '../../lib/bot-server';
+import {BotServer} from '../../lib/bot-server';
 
 chai.use(ChaiHttp);
 
@@ -9,11 +9,11 @@ describe('/status', () => {
 
   beforeEach(() => {
     server = new BotServer({
+      cert: BotServer.defaultSSLCert,
       channelAccessToken: 'test',
       channelSecret: 'test',
-      port: 1234,
       key: BotServer.defaultSSLKey,
-      cert: BotServer.defaultSSLCert
+      port: 1234
     });
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "line-bot-server",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "LINE Bot Server for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,8 +12,8 @@
     "coverage:remap": "remap-istanbul -i coverage/coverage.json -o coverage/coverage.json",
     "gen-default-ssl": "ts-node scripts/gen-default-ssl.ts",
     "gen-empty-env": "ts-node scripts/gen-empty-env.ts",
-    "lint": "tslint -p .",
-    "lint:fix": "tslint -p . --fix",
+    "lint": "tslint -p . -p scripts -p test",
+    "lint:fix": "tslint -p . -p scripts -p test --fix",
     "prebuild": "npm run clean && npm run lint",
     "precommit": "npm run lint",
     "prepush": "npm run build && npm run coverage",
