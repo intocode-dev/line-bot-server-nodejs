@@ -33,11 +33,11 @@ export default class BotServer {
 
   public static getEnvOptions(): BotServerOptions {
     return {
+      cert: process.env.SSL_CERT || '',
       channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || '',
       channelSecret: process.env.CHANNEL_SECRET || '',
-      port: (process.env.PORT) ? Number(process.env.PORT) : 443,
       key: process.env.SSL_KEY || '',
-      cert: process.env.SSL_CERT || ''
+      port: (process.env.PORT) ? Number(process.env.PORT) : 443
     };
   }
 
@@ -93,8 +93,8 @@ export default class BotServer {
     this.app = express();
 
     this.https = https.createServer({
-      key: fs.readFileSync(this.options.key),
-      cert: fs.readFileSync(this.options.cert)
+      cert: fs.readFileSync(this.options.cert),
+      key: fs.readFileSync(this.options.key)
     }, this.app);
 
   }
