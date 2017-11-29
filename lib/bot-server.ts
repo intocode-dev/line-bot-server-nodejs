@@ -1,21 +1,63 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as pem from 'pem';
 import * as LINEBot from '@line/bot-sdk';
 import * as express from 'express';
-import * as https from 'https';
-import {BotServerOptions} from './bot-server-options';
 import {ErrorRequestHandler, Express, RequestHandler} from 'express';
+import * as fs from 'fs-extra';
+import * as https from 'https';
+import * as path from 'path';
+import * as pem from 'pem';
+import {BotServerOptions} from './bot-server-options';
 
 export default class BotServer {
-  static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
-  static defaultSSLCert = path.resolve(__dirname, '../ssl/localhost.crt');
+  public static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
+  public static defaultSSLCert = path.resolve(__dirname, '../ssl/localhost.crt');
 
-  options: BotServerOptions;
-  client: LINEBot.Client;
-  clientConfig: LINEBot.ClientConfig;
-  app: Express;
-  https: https.Server;
+  public static generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
+
+    return new Promise((resolve, reject) => {
+      if (!fs.existsSync(BotServer.defaultSSLKey) || !fs.existsSync(BotServer.defaultSSLCert)) {
+        pem.createCertificate({days, selfSigned}, (err, keys) => {
+          if (err) {
+            return reject(err);
+          }
+
+          fs.writeFileSync(BotServer.defaultSSLKey, keys.serviceKey);
+          fs.writeFileSync(BotServer.defaultSSLCert, keys.certificate);
+
+          return resolve(true);
+        });
+      } else {
+        return resolve(true);
+      }
+    });
+  }
+
+  public static getEnvOptions(): BotServerOptions {
+    return {
+      channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || '',
+      channelSecret: process.env.CHANNEL_SECRET || '',
+      port: (process.env.PORT) ? Number(process.env.PORT) : 443,
+      key: process.env.SSL_KEY || '',
+      cert: process.env.SSL_CERT || ''
+    };
+  }
+
+  public static generateEnvFile(fileName: string, options: BotServerOptions = {} as BotServerOptions) {
+    const buffer = new Buffer(
+      'CHANNEL_ACCESS_TOKEN=' + (options.channelAccessToken || '') + '\n' +
+      'CHANNEL_SECRET=' + (options.channelSecret || '') + '\n' +
+      'PORT=' + (options.port || '') + '\n' +
+      'SSL_KEY=' + (options.key || '') + '\n' +
+      'SSL_CERT=' + (options.cert || '') + '\n'
+    );
+
+    fs.writeFileSync(fileName, buffer);
+  }
+
+  public options: BotServerOptions;
+  public client: LINEBot.Client;
+  public clientConfig: LINEBot.ClientConfig;
+  public app: Express;
+  public https: https.Server;
 
   constructor(options: BotServerOptions) {
 
@@ -42,8 +84,8 @@ export default class BotServer {
     }
 
     this.clientConfig = {
-      channelSecret: this.options.channelSecret,
-      channelAccessToken: this.options.channelAccessToken
+      channelAccessToken: this.options.channelAccessToken,
+      channelSecret: this.options.channelSecret
     };
 
     this.client = new LINEBot.Client(this.clientConfig);
@@ -72,45 +114,4 @@ export default class BotServer {
     this.https.listen(this.options.port);
   }
 
-  static generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
-
-    return new Promise((resolve, reject) => {
-      if (!fs.existsSync(BotServer.defaultSSLKey) || !fs.existsSync(BotServer.defaultSSLCert)) {
-        pem.createCertificate({ days: days, selfSigned: selfSigned }, (err, keys) => {
-          if (err) {
-            return reject(err);
-          }
-
-          fs.writeFileSync(BotServer.defaultSSLKey, keys.serviceKey);
-          fs.writeFileSync(BotServer.defaultSSLCert, keys.certificate);
-
-          return resolve(true);
-        });
-      } else {
-        return resolve(true);
-      }
-    });
-  }
-
-  static getEnvOptions(): BotServerOptions {
-    return {
-      channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || '',
-      channelSecret: process.env.CHANNEL_SECRET || '',
-      port: (process.env.PORT) ? Number(process.env.PORT) : 443,
-      key: process.env.SSL_KEY || '',
-      cert: process.env.SSL_CERT || ''
-    };
-  }
-
-  static generateEnvFile(fileName: string, options: BotServerOptions = {} as BotServerOptions) {
-    let buffer = new Buffer(
-      'CHANNEL_ACCESS_TOKEN=' + (options.channelAccessToken || '') + '\n' +
-      'CHANNEL_SECRET=' + (options.channelSecret || '') + '\n' +
-      'PORT=' + (options.port || '') + '\n' +
-      'SSL_KEY=' + (options.key || '') + '\n' +
-      'SSL_CERT=' + (options.cert || '') + '\n'
-    );
-
-    fs.writeFileSync(fileName, buffer);
-  }
 }
