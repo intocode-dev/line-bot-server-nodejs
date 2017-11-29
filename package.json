@@ -13,7 +13,7 @@
     "clean": "del-cli dist",
     "prebuild": "npm run lint",
     "build": "tsc",
-    "precommit": "npm run build && npm run coverage",
+    "precommit": "npm run lint",
     "prepush": "npm run build && npm run coverage",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- -r ts-node/register test/**/*.spec.ts --exit",
     "codecov": "codecov -t 4a63f508-52ac-4484-8246-d0973f65dcdf"
