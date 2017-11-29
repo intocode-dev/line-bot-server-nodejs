@@ -60,14 +60,11 @@ typings/
 # IDE
 .idea/
 
-# Build
-**/*.js
-**/*.js.map
-**/*.d.ts
+# Built
+dist
 
 # SSL
 ssl/*
 
 # Exceptions
 !test/tsconfig.mocha.js
-
