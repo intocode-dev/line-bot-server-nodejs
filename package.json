@@ -1,6 +1,6 @@
 {
   "name": "line-bot-server",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "LINE Bot Server for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,8 +8,7 @@
     "build": "tsc",
     "clean": "del-cli dist",
     "codecov": "codecov -t 4a63f508-52ac-4484-8246-d0973f65dcdf",
-    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- -r ts-node/register test/**/*.spec.ts --exit",
-    "coverage:remap": "remap-istanbul -i coverage/coverage.json -o coverage/coverage.json",
+    "coverage": "nyc --reporter=html --reporter=text-summary mocha",
     "gen-default-ssl": "ts-node scripts/gen-default-ssl.ts",
     "gen-empty-env": "ts-node scripts/gen-empty-env.ts",
     "lint": "tslint -p . -p scripts -p test",
@@ -19,8 +18,28 @@
     "prepush": "npm run build && npm run coverage",
     "pretest": "npm run build && npm run gen-default-ssl && npm run gen-empty-env",
     "release": "npm run build && npm publish --access public",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts --exit",
-    "travis:test": "npm run build && npm run gen-default-ssl && npm run gen-empty-env && npm run coverage && npm run coverage:remap"
+    "test": "nyc --reporter=lcov --reporter=text-summary mocha --exit",
+    "test:watch": "mocha --watch-extensions ts --watch"
+  },
+  "nyc": {
+    "per-file": true,
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "include": [
+      "lib/**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "lib/bot-server-options.ts"
+    ],
+    "require": [
+      "ts-node/register",
+      "source-map-support/register"
+    ],
+    "cache": true,
+    "all": true
   },
   "repository": {
     "type": "git",
@@ -66,9 +85,10 @@
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
     "mocha": "^4.0.1",
+    "nyc": "^11.3.0",
     "prettier": "^1.8.2",
-    "remap-istanbul": "^0.9.5",
     "sinon": "^4.1.2",
+    "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
     "typescript": "^2.6.2"
