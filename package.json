@@ -8,7 +8,7 @@
     "build": "tsc",
     "clean": "del-cli dist",
     "codecov": "codecov -t 4a63f508-52ac-4484-8246-d0973f65dcdf",
-    "coverage": "nyc --reporter=html --reporter=text-summary mocha",
+    "coverage": "nyc --reporter=html --reporter=text-summary mocha --exit",
     "gen-default-ssl": "ts-node scripts/gen-default-ssl.ts",
     "gen-empty-env": "ts-node scripts/gen-empty-env.ts",
     "lint": "tslint -p . -p scripts -p test",
