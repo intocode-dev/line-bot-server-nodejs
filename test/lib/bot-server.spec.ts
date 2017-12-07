@@ -1,7 +1,7 @@
 import * as LINEBot from '@line/bot-sdk';
 import * as chai from 'chai';
 import * as ChaiAsPromised from 'chai-as-promised';
-import * as dotenv from 'dotenv';
+import * as Dotenv from 'dotenv';
 import * as fs from 'fs-extra';
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -26,6 +26,24 @@ describe('BotServer', () => {
     sandbox = sinon.createSandbox();
 
   describe('constructor', () => {
+
+    describe('when options is not provided', () => {
+      let stubGetEnvOptions: SinonStub;
+
+      before(() => {
+        stubGetEnvOptions = sandbox.stub(BotServer, 'getEnvOptions');
+        stubGetEnvOptions.returns(fullOptions);
+        new BotServer();
+      });
+
+      it('should get options from environment', () => {
+        expect(stubGetEnvOptions.calledOnce).to.be.true;
+      });
+
+      after(() => {
+        stubGetEnvOptions.restore();
+      });
+    });
 
     describe('when port is not provided in options', () => {
       it('should throw an error', () => {
@@ -202,7 +220,8 @@ describe('BotServer', () => {
     let server: BotServer,
       stubPost: SinonStub,
       stubMiddleware: SinonStub,
-      callback = () => {},
+      callback = () => {
+      },
       endpoint = '/testing';
 
     before(() => {
@@ -241,7 +260,7 @@ describe('BotServer', () => {
 
         before(() => {
           BotServer.generateEnvFile(testEnvFile, {} as BotServerOptions);
-          expectedConfigObject = dotenv.parse(fs.readFileSync(testEnvFile));
+          expectedConfigObject = Dotenv.parse(fs.readFileSync(testEnvFile));
         });
 
         it('should create a file with empty variables', () => {
@@ -264,7 +283,7 @@ describe('BotServer', () => {
 
         before(() => {
           BotServer.generateEnvFile(testEnvFile);
-          expectedConfigObject = dotenv.parse(fs.readFileSync(testEnvFile));
+          expectedConfigObject = Dotenv.parse(fs.readFileSync(testEnvFile));
         });
 
         it('should create a file with empty variables', () => {
@@ -287,7 +306,7 @@ describe('BotServer', () => {
 
         before(() => {
           BotServer.generateEnvFile(testEnvFile, fullOptions);
-          expectedConfigObject = dotenv.parse(fs.readFileSync(testEnvFile));
+          expectedConfigObject = Dotenv.parse(fs.readFileSync(testEnvFile));
         });
 
         it('should create a file with correct variables', () => {
@@ -389,7 +408,7 @@ describe('BotServer', () => {
         stubFileExists = sandbox.stub(fs, 'existsSync');
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubFileExists.onFirstCall().returns(false);
-        stubCreateCert.callsArgWith(1, new Error(errorMessage), { serviceKey: 'serviceKey', certificate: 'certificate' });
+        stubCreateCert.callsArgWith(1, new Error(errorMessage), {serviceKey: 'serviceKey', certificate: 'certificate'});
       });
 
       it('should reject with an error', () => {
@@ -415,7 +434,7 @@ describe('BotServer', () => {
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubWriteFile = sandbox.stub(fs, 'writeFileSync');
         stubFileExists.onFirstCall().returns(false);
-        stubCreateCert.callsArgWith(1, null, { serviceKey, certificate });
+        stubCreateCert.callsArgWith(1, null, {serviceKey, certificate});
       });
 
       it('should create cert and key files', () => {
@@ -436,45 +455,216 @@ describe('BotServer', () => {
 
     });
 
+    describe('when provide days and self-signed parameters', () => {
+      let stubCreateCert: SinonStub,
+        stubFileExists: SinonStub,
+        stubWriteFile: SinonStub,
+        serviceKey = 'serviceKey',
+        certificate = 'certificate';
+
+      before(() => {
+        stubFileExists = sandbox.stub(fs, 'existsSync');
+        stubCreateCert = sandbox.stub(pem, 'createCertificate');
+        stubWriteFile = sandbox.stub(fs, 'writeFileSync');
+        stubFileExists.onFirstCall().returns(false);
+        stubCreateCert.callsArgWith(1, null, {serviceKey, certificate});
+      });
+
+      it('should create with specified days and self-signed parameters', () => {
+        let expectedPort = Math.ceil(Math.random() * 1000) + 1000;
+
+        return expect(BotServer.generateDefaultSSLAsync(expectedPort, false)).to.eventually.be.true
+          .then(() => {
+            expect(stubCreateCert.getCall(0).args[0].days).to.equal(expectedPort);
+            expect(stubCreateCert.getCall(0).args[0].selfSigned).to.be.false;
+          });
+      });
+
+      after(() => {
+        stubFileExists.restore();
+        stubCreateCert.restore();
+        stubWriteFile.restore();
+      });
+    });
+
   });
 
   describe('getEnvOptions', () => {
-    let testEnvFile = path.resolve(__dirname, '../../.test.env'),
-      testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
-        CHANNEL_SECRET=test_channelSecret\n\
-        PORT=1234\n\
-        SSL_KEY=test_keyFile\n\
-        SSL_CERT=test_certFile\n'),
-      expectedOptions: BotServerOptions;
 
-    before(() => {
-      fs.writeFileSync(testEnvFile, testOptionsString);
-      dotenv.config({path: testEnvFile});
-      expectedOptions = BotServer.getEnvOptions();
+    describe('when specify options', () => {
+
+      describe('and all options provided', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.env'),
+          testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
+          CHANNEL_SECRET=test_channelSecret\n\
+          PORT=1234\n\
+          SSL_KEY=test_keyFile\n\
+          SSL_CERT=test_certFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct channelAccessToken', () => {
+          expect(expectedOptions.channelAccessToken).to.equal('test_channelAccessToken');
+        });
+
+        it('should have correct channelSecret', () => {
+          expect(expectedOptions.channelSecret).to.equal('test_channelSecret');
+        });
+
+        it('should have correct port', () => {
+          expect(expectedOptions.port).to.equal(1234);
+        });
+
+        it('should have correct key', () => {
+          expect(expectedOptions.key).to.equal('test_keyFile');
+        });
+
+        it('should have correct cert', () => {
+          expect(expectedOptions.cert).to.equal('test_certFile');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
+      describe('and CHANNEL_ACCESS_TOKEN option is missing', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.missing-access-token.env'),
+          testOptionsString = new Buffer('CHANNEL_SECRET=test_channelSecret\n\
+          PORT=1234\n\
+          SSL_KEY=test_keyFile\n\
+          SSL_CERT=test_certFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+          delete process.env.CHANNEL_ACCESS_TOKEN;
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct channelAccessToken', () => {
+          expect(expectedOptions.channelAccessToken).to.equal('');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
+      describe('and CHANNEL_SECRET option is missing', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.missing-secret.env'),
+          testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
+          PORT=1234\n\
+          SSL_KEY=test_keyFile\n\
+          SSL_CERT=test_certFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+          delete process.env.CHANNEL_SECRET;
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct channelSecret', () => {
+          expect(expectedOptions.channelSecret).to.equal('');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
+      describe('and PORT option is missing', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.missing-port.env'),
+          testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
+          CHANNEL_SECRET=test_channelSecret\n\
+          SSL_KEY=test_keyFile\n\
+          SSL_CERT=test_certFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+          delete process.env.PORT;
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct port', () => {
+          expect(expectedOptions.port).to.equal(443);
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
+      describe('and SSL_KEY option is missing', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.missing-key.env'),
+          testOptionsString = new Buffer('CHANNEL_SECRET=test_channelSecret\n\
+          PORT=1234\n\
+          SSL_CERT=test_certFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+          delete process.env.SSL_KEY;
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct key', () => {
+          expect(expectedOptions.key).to.equal('');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
+      describe('and SSL_CERT option is missing', () => {
+        let testEnvFile = path.resolve(__dirname, '../../.test.missing-cert.env'),
+          testOptionsString = new Buffer('CHANNEL_ACCESS_TOKEN=test_channelAccessToken\n\
+          PORT=1234\n\
+          SSL_KEY=test_keyFile\n'),
+          expectedOptions: BotServerOptions;
+
+        before(() => {
+          fs.writeFileSync(testEnvFile, testOptionsString);
+          delete process.env.SSL_CERT;
+          expectedOptions = BotServer.getEnvOptions({path: testEnvFile});
+        });
+
+        it('should have correct cert', () => {
+          expect(expectedOptions.cert).to.equal('');
+        });
+
+        after(() => {
+          fs.removeSync(testEnvFile);
+        });
+      });
+
     });
 
-    it('should have correct channelAccessToken', () => {
-      expect(expectedOptions.channelAccessToken).to.equal('test_channelAccessToken');
-    });
+    describe('when not specify any options', () => {
+      let stubDotenv: SinonStub;
 
-    it('should have correct channelSecret', () => {
-      expect(expectedOptions.channelSecret).to.equal('test_channelSecret');
-    });
+      before(() => {
+        stubDotenv = sandbox.stub(Dotenv, 'config');
+        BotServer.getEnvOptions();
+      });
 
-    it('should have correct port', () => {
-      expect(expectedOptions.port).to.equal(1234);
-    });
+      it('should call Dotenv once without parameter', () => {
+        expect(stubDotenv.calledOnce).to.be.true;
+        expect(stubDotenv.getCall(0).args[0]).to.be.undefined;
+      });
 
-    it('should have correct channelAccessToken', () => {
-      expect(expectedOptions.key).to.equal('test_keyFile');
-    });
+      after(() => {
+        stubDotenv.restore();
+      });
 
-    it('should have correct channelAccessToken', () => {
-      expect(expectedOptions.cert).to.equal('test_certFile');
-    });
-
-    after(() => {
-      fs.removeSync(testEnvFile);
     });
 
   });

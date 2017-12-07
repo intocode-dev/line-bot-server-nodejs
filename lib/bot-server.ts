@@ -1,4 +1,6 @@
 import * as LINEBot from '@line/bot-sdk';
+import * as Dotenv from 'dotenv';
+import {DotenvOptions} from 'dotenv';
 import * as express from 'express';
 import {ErrorRequestHandler, Express, RequestHandler} from 'express';
 import * as fs from 'fs-extra';
@@ -31,7 +33,9 @@ export class BotServer {
     });
   }
 
-  public static getEnvOptions(): BotServerOptions {
+  public static getEnvOptions(options?: DotenvOptions): BotServerOptions {
+    Dotenv.config(options);
+
     return {
       cert: process.env.SSL_CERT || '',
       channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || '',
@@ -59,9 +63,9 @@ export class BotServer {
   public app: Express;
   public https: https.Server;
 
-  constructor(options: BotServerOptions) {
+  constructor(options?: BotServerOptions) {
 
-    this.options = options;
+    this.options = options || BotServer.getEnvOptions();
 
     if (!this.options.port) {
       throw new Error('Missing options.port\nPlease set PORT environment variable.');
