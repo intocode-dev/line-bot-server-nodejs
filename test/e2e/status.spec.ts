@@ -23,7 +23,6 @@ describe('/status', () => {
       chai.request(server.app)
         .get('/status')
         .end((err, res: ChaiHttp.Response) => {
-          chai.expect(err.message).to.equal('Not Found');
           chai.expect(res).to.have.status(404);
           done();
         });
