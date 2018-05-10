@@ -1,23 +1,23 @@
 import * as LINEBot from '@line/bot-sdk';
 import * as Dotenv from 'dotenv';
-import {DotenvOptions} from 'dotenv';
+import { DotenvOptions } from 'dotenv';
 import * as express from 'express';
-import {ErrorRequestHandler, Express, RequestHandler} from 'express';
+import { ErrorRequestHandler, Express, RequestHandler } from 'express';
 import * as fs from 'fs-extra';
 import * as https from 'https';
 import * as path from 'path';
 import * as pem from 'pem';
-import {BotServerOptions} from './bot-server-options';
+import { BotServerOptions } from './bot-server-options';
 
 export class BotServer {
   public static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
   public static defaultSSLCert = path.resolve(__dirname, '../ssl/localhost.crt');
 
-  public static generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
+  public static async generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
 
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(BotServer.defaultSSLKey) || !fs.existsSync(BotServer.defaultSSLCert)) {
-        pem.createCertificate({days, selfSigned}, (err, keys) => {
+        pem.createCertificate({ days, selfSigned }, (err, keys) => {
           if (err) {
             return reject(err);
           }
