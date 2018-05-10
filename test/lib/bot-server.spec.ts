@@ -338,7 +338,7 @@ describe('BotServer', () => {
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubFileExists.onFirstCall().returns(false);
         stubFileExists.onSecondCall().returns(true);
-        BotServer.generateDefaultSSLAsync();
+        BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'));
       });
 
       it('should create certificate and key files', () => {
@@ -362,7 +362,7 @@ describe('BotServer', () => {
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubFileExists.onFirstCall().returns(true);
         stubFileExists.onSecondCall().returns(false);
-        BotServer.generateDefaultSSLAsync();
+        BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'));
       });
 
       it('should create certificate and key files', () => {
@@ -385,7 +385,7 @@ describe('BotServer', () => {
         stubCreateCert = sandbox.stub(pem, 'createCertificate');
         stubFileExists.onFirstCall().returns(true);
         stubFileExists.onSecondCall().returns(true);
-        BotServer.generateDefaultSSLAsync();
+        BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'));
       });
 
       it('should not create certificate and key files', () => {
@@ -412,7 +412,7 @@ describe('BotServer', () => {
       });
 
       it('should reject with an error', () => {
-        return expect(BotServer.generateDefaultSSLAsync()).to.eventually.rejectedWith(errorMessage);
+        return expect(BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'))).to.eventually.rejectedWith(errorMessage);
       });
 
       after(() => {
@@ -438,7 +438,7 @@ describe('BotServer', () => {
       });
 
       it('should create cert and key files', () => {
-        return expect(BotServer.generateDefaultSSLAsync()).to.eventually.be.true
+        return expect(BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'))).to.eventually.be.true
           .then(() => {
             expect(stubWriteFile.getCall(0).args[0]).to.equal(BotServer.defaultSSLKey);
             expect(stubWriteFile.getCall(0).args[1]).to.equal(serviceKey);
@@ -473,7 +473,7 @@ describe('BotServer', () => {
       it('should create with specified days and self-signed parameters', () => {
         let expectedPort = Math.ceil(Math.random() * 1000) + 1000;
 
-        return expect(BotServer.generateDefaultSSLAsync(expectedPort, false)).to.eventually.be.true
+        return expect(BotServer.generateDefaultSSLAsync(path.resolve('../../ssl'), expectedPort, false)).to.eventually.be.true
           .then(() => {
             expect(stubCreateCert.getCall(0).args[0].days).to.equal(expectedPort);
             expect(stubCreateCert.getCall(0).args[0].selfSigned).to.be.false;

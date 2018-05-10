@@ -10,10 +10,14 @@ import * as pem from 'pem';
 import { BotServerOptions } from './bot-server-options';
 
 export class BotServer {
-  public static defaultSSLKey = path.resolve(__dirname, '../ssl/localhost.key');
-  public static defaultSSLCert = path.resolve(__dirname, '../ssl/localhost.crt');
+  public static defaultSSLKey = 'ssl/localhost.key';
+  public static defaultSSLCert = 'ssl/localhost.crt';
 
-  public static async generateDefaultSSLAsync(days: number = 9999, selfSigned: boolean = true) {
+  public static async generateDefaultSSLAsync(sslDir: string, days: number = 9999, selfSigned: boolean = true) {
+    await fs.ensureDir(sslDir);
+
+    BotServer.defaultSSLKey = path.resolve(sslDir, 'localhost.key');
+    BotServer.defaultSSLCert = path.resolve(sslDir, 'localhost.crt');
 
     return new Promise((resolve, reject) => {
       if (!fs.existsSync(BotServer.defaultSSLKey) || !fs.existsSync(BotServer.defaultSSLCert)) {
