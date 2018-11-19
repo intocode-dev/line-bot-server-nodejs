@@ -1,6 +1,6 @@
 import * as LINEBot from '@line/bot-sdk';
 import * as Dotenv from 'dotenv';
-import { DotenvOptions } from 'dotenv';
+import { DotenvConfigOptions } from 'dotenv';
 import * as express from 'express';
 import { ErrorRequestHandler, Express, RequestHandler } from 'express';
 import * as fs from 'fs-extra';
@@ -37,7 +37,7 @@ export class BotServer {
     });
   }
 
-  public static getEnvOptions(options?: DotenvOptions): BotServerOptions {
+  public static getEnvOptions(options?: DotenvConfigOptions): BotServerOptions {
     Dotenv.config(options);
 
     return {
